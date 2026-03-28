@@ -1,7 +1,7 @@
 package main
 
-import "fmt"
+import "PonGo/internal/pong"
 
 func main() {
-	fmt.Println("hello from client")
+	pong.Run()
 }

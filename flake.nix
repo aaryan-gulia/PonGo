@@ -24,6 +24,17 @@
         # Add native libraries needed by cgo packages here.
         # Examples: openssl zlib sqlite libgit2 postgresql
         cgoLibraries = with pkgs; [
+          alsa-lib
+          libglvnd
+          libxkbcommon
+          wayland
+          libx11
+          libxcursor
+          libxext
+          libxi
+          libxinerama
+          libxrandr
+          libxxf86vm
         ];
       in {
         devShells.default = pkgs.mkShell {
@@ -33,9 +44,14 @@
           shellHook = ''
             export EDITOR=nvim
             export CGO_ENABLED=1
-            export GOPATH="$PWD/.go"
+            export GOPATH="$PWD/.go:$PWD"
             export GOBIN="$GOPATH/bin"
             export PATH="$GOBIN:$PATH"
+            if [ -d /usr/lib ]; then
+              export LD_LIBRARY_PATH="/usr/lib:${pkgs.lib.makeLibraryPath cgoLibraries}:$LD_LIBRARY_PATH"
+            else
+              export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath cgoLibraries}:$LD_LIBRARY_PATH"
+            fi
             mkdir -p "$GOBIN"
           '';
         };
