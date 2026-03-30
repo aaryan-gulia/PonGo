@@ -46,7 +46,7 @@ func (g *GameState) wallCollision() {
 	if g.ball.y < 0 || g.ball.y > 100 {
 		g.ball.vy *= -1
 	}
-	if g.ball.x < 0 || g.ball.y > 100 {
+	if g.ball.x < 0 || g.ball.x > 100 {
 		g.Reset()
 	}
 }
