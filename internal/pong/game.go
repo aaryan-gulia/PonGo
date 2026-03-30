@@ -5,7 +5,6 @@ import (
 	"image/color"
 
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/vector"
 )
 
 func Hello() {
@@ -29,8 +28,16 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	ww, wh := ebiten.WindowSize()
+	fmt.Println(ww)
+	newImage := ebiten.NewImage(1, 1)
+	newImage.Fill(color.White)
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(BallWidth*float64(ww)/100, BallHeight*float64(wh)/100)
+	op.GeoM.Translate(g.state.ball.x*float64(ww)/100, g.state.ball.y*float64(wh)/100)
+	op.ColorScale.ScaleWithColor(color.White)
+	screen.DrawImage(newImage, op)
 
-	vector.DrawFilledRect(screen, float32(g.state.ball.x), float32(g.state.ball.y), float32(BallWidth), float32(BallHeight), color.White, false)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
