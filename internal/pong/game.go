@@ -34,13 +34,12 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	_, wh := ebiten.WindowSize()
-	scale := wh / int(Height)
+	h := screen.Bounds().Dy()
+	scale := float64(h) / Height
 
 	drawRect(PaddleWidth*float64(scale), PaddleHeight*float64(scale), 0, g.state.paddle1*float64(scale), screen)
 	drawRect(PaddleWidth*float64(scale), PaddleHeight*float64(scale), (Width-PaddleWidth)*float64(scale), g.state.paddle2*float64(scale), screen)
 	drawRect(BallWidth*float64(scale), BallHeight*float64(scale), g.state.ball.x*float64(scale), g.state.ball.y*float64(scale), screen)
-
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
