@@ -17,10 +17,16 @@ type Game struct {
 
 func (g *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		fmt.Println("w")
+		g.state.paddle1 += 5
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		fmt.Println("s")
+		g.state.paddle1 -= 5
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
+		g.state.paddle2 += 5
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
+		g.state.paddle2 -= 5
 	}
 	g.state.PollState()
 
@@ -28,15 +34,12 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	ww, wh := ebiten.WindowSize()
-	fmt.Println(ww)
-	newImage := ebiten.NewImage(1, 1)
-	newImage.Fill(color.White)
-	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Scale(BallWidth*float64(ww)/100, BallHeight*float64(wh)/100)
-	op.GeoM.Translate(g.state.ball.x*float64(ww)/100, g.state.ball.y*float64(wh)/100)
-	op.ColorScale.ScaleWithColor(color.White)
-	screen.DrawImage(newImage, op)
+	_, wh := ebiten.WindowSize()
+	scale := wh / 100
+
+	drawRect(PaddleWidth*float64(scale), PaddleHeight*float64(scale), 0, g.state.paddle1*float64(scale), screen)
+	drawRect(PaddleWidth*float64(scale), PaddleHeight*float64(scale), (100-PaddleWidth)*float64(scale), g.state.paddle2*float64(scale), screen)
+	drawRect(BallWidth*float64(scale), BallHeight*float64(scale), g.state.ball.x*float64(scale), g.state.ball.y*float64(scale), screen)
 
 }
 
@@ -52,4 +55,14 @@ func Run() {
 	if err := ebiten.RunGame(&Game{state: state}); err != nil {
 		fmt.Println("Hello World")
 	}
+}
+func drawRect(w, h, x, y float64, s *ebiten.Image) {
+
+	newImage := ebiten.NewImage(1, 1)
+	newImage.Fill(color.White)
+	op := &ebiten.DrawImageOptions{}
+	op.GeoM.Scale(w, h)
+	op.GeoM.Translate(x, y)
+	op.ColorScale.ScaleWithColor(color.White)
+	s.DrawImage(newImage, op)
 }

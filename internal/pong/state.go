@@ -33,13 +33,25 @@ func (g *GameState) PollState() {
 
 }
 
+func (g *GameState) Reset() {
+	g.ball.x = Width / 2
+	g.ball.y = Height / 2
+	g.ball.vx = BallVelocityBase
+	g.ball.vy = BallVelocityBase
+}
+
 func (g *GameState) moveBall() {
 	g.ball.x += g.ball.vx
 	g.ball.y += g.ball.vy
 }
 
 func (g *GameState) paddleCollision() {
-	//TODO
+	if g.ball.x < PaddleWidth && g.ball.y < g.paddle1+PaddleHeight && g.ball.y > g.paddle1 {
+		g.ball.vx *= -1
+	}
+	if g.ball.x > 100-PaddleWidth && g.ball.y < g.paddle2+PaddleHeight && g.ball.y > g.paddle2 {
+		g.ball.vx *= -1
+	}
 }
 
 func (g *GameState) wallCollision() {
@@ -53,11 +65,4 @@ func (g *GameState) wallCollision() {
 
 func (g *GameState) paddleRebound() {
 	//TODO
-}
-
-func (g *GameState) Reset() {
-	g.ball.x = Width / 2
-	g.ball.y = Height / 2
-	g.ball.vx = BallVelocityBase
-	g.ball.vy = BallVelocityBase
 }
