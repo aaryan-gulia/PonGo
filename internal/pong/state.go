@@ -5,6 +5,7 @@ const (
 	Height                 float64 = 100
 	PaddleHeight           float64 = 16
 	PaddleWidth            float64 = 2
+	PaddleVelocity         float64 = 1
 	BallHeight             float64 = 2
 	BallWidth              float64 = 2
 	BallVelocityBase       float64 = 1
@@ -49,20 +50,16 @@ func (g *GameState) paddleCollision() {
 	if g.ball.x < PaddleWidth && g.ball.y < g.paddle1+PaddleHeight && g.ball.y > g.paddle1 {
 		g.ball.vx *= -1
 	}
-	if g.ball.x > 100-PaddleWidth && g.ball.y < g.paddle2+PaddleHeight && g.ball.y > g.paddle2 {
+	if g.ball.x > Width-PaddleWidth && g.ball.y < g.paddle2+PaddleHeight && g.ball.y > g.paddle2 {
 		g.ball.vx *= -1
 	}
 }
 
 func (g *GameState) wallCollision() {
-	if g.ball.y < 0 || g.ball.y > 100 {
+	if g.ball.y < 0 || g.ball.y > Height {
 		g.ball.vy *= -1
 	}
-	if g.ball.x < 0 || g.ball.x > 100 {
+	if g.ball.x < 0 || g.ball.x > Width {
 		g.Reset()
 	}
-}
-
-func (g *GameState) paddleRebound() {
-	//TODO
 }
