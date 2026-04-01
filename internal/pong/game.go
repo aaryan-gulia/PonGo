@@ -17,16 +17,16 @@ type Game struct {
 
 func (g *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		g.state.paddle1 += 5
+		g.state.HandleEvent(W)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		g.state.paddle1 -= 5
+		g.state.HandleEvent(S)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
-		g.state.paddle2 += 5
+		g.state.HandleEvent(Up)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
-		g.state.paddle2 -= 5
+		g.state.HandleEvent(Down)
 	}
 	g.state.PollState()
 

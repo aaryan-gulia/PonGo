@@ -5,11 +5,20 @@ const (
 	Height                 float64 = 100
 	PaddleHeight           float64 = 16
 	PaddleWidth            float64 = 2
-	PaddleVelocity         float64 = 1
+	PaddleVelocity         float64 = 3
 	BallHeight             float64 = 2
 	BallWidth              float64 = 2
 	BallVelocityBase       float64 = 1
 	BallVelocityMultiplier float64 = 2
+)
+
+type GameEvent int
+
+const (
+	W GameEvent = iota
+	S
+	Up
+	Down
 )
 
 type Ball struct {
@@ -34,6 +43,19 @@ func (g *GameState) PollState() {
 
 }
 
+func (g *GameState) HandleEvent(e GameEvent) {
+	switch e {
+	case W:
+		g.movePaddle1Up()
+	case S:
+		g.movePaddle1Down()
+	case Up:
+		g.movePaddle2Up()
+	case Down:
+		g.movePaddle2Down()
+	}
+}
+
 func (g *GameState) Reset() {
 	g.ball.x = Width / 2
 	g.ball.y = Height / 2
@@ -56,10 +78,42 @@ func (g *GameState) paddleCollision() {
 }
 
 func (g *GameState) wallCollision() {
-	if g.ball.y < 0 || g.ball.y > Height {
+	if g.ball.y < 0 || g.ball.y+BallHeight > Height {
 		g.ball.vy *= -1
 	}
 	if g.ball.x < 0 || g.ball.x > Width {
 		g.Reset()
+	}
+}
+
+func (g *GameState) movePaddle1Up() {
+	g.paddle1 -= PaddleVelocity
+
+	if g.paddle1 < 0 {
+		g.paddle1 = 0
+
+	}
+}
+
+func (g *GameState) movePaddle2Up() {
+	g.paddle2 -= PaddleVelocity
+	if g.paddle2 < 0 {
+		g.paddle2 = 0
+
+	}
+}
+
+func (g *GameState) movePaddle1Down() {
+	g.paddle1 += PaddleVelocity
+	if g.paddle1+PaddleHeight > Height {
+		g.paddle1 = Height - PaddleHeight
+
+	}
+}
+func (g *GameState) movePaddle2Down() {
+	g.paddle2 += PaddleVelocity
+	if g.paddle2+PaddleHeight > Height {
+		g.paddle2 = Height - PaddleHeight
+
 	}
 }
