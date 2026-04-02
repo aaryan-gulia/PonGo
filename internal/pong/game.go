@@ -13,11 +13,13 @@ func Hello() {
 
 type Game struct {
 	state GameState
+	ch    chan GameEvent
 }
 
 func (g *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
 		g.state.HandleEvent(W)
+		g.ch <- W
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		g.state.HandleEvent(S)
@@ -47,11 +49,19 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 func Run() {
+	ch := make(chan GameEvent)
 	var state GameState
+
+	go func() {
+		for event := range ch {
+			fmt.Println(event)
+		}
+	}()
+
 	state.Reset()
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Hello, World!")
-	if err := ebiten.RunGame(&Game{state: state}); err != nil {
+	if err := ebiten.RunGame(&Game{state: state, ch: ch}); err != nil {
 		fmt.Println("Hello World")
 	}
 }
