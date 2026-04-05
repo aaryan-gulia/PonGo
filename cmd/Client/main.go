@@ -1,7 +1,7 @@
 package main
 
-import "PonGo/internal/pong"
+import "PonGo/internal/client"
 
 func main() {
-	pong.Run()
+	client.Run()
 }

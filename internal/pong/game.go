@@ -1,16 +1,11 @@
 package pong
 
 import (
-	"fmt"
 	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
 	"log"
 	"net"
 )
-
-func Hello() {
-	fmt.Println("Hello World")
-}
 
 type Game struct {
 	state GameState
@@ -66,7 +61,7 @@ func Run() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Hello, World!")
 	if err := ebiten.RunGame(&Game{state: state, conn: conn}); err != nil {
-		fmt.Println("Hello World")
+		log.Fatalln("game engine error :", err)
 	}
 }
 

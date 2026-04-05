@@ -33,6 +33,8 @@ type Ball struct {
 	y  float64
 	vx float64
 	vy float64
+	X  float64
+	Y  float64
 }
 
 type GameState struct {
@@ -41,6 +43,7 @@ type GameState struct {
 	points1 int
 	points2 int
 	ball    Ball
+	Ball    Ball
 }
 
 func (g *GameState) PollState() {
@@ -92,11 +95,18 @@ func (g *GameState) Reset() {
 	g.ball.y = Height / 2
 	g.ball.vx = BallVelocityBase
 	g.ball.vy = BallVelocityBase
+	g.ball.X = g.ball.x
+	g.ball.Y = g.ball.y
+	g.Ball = g.ball
 }
 
 func (g *GameState) moveBall() {
 	g.ball.x += g.ball.vx
+	g.ball.X = g.ball.x
 	g.ball.y += g.ball.vy
+	g.ball.Y = g.ball.y
+	g.Ball = g.ball
+
 }
 
 func (g *GameState) paddleCollision() {
