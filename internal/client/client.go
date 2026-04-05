@@ -2,10 +2,13 @@ package client
 
 import (
 	"PonGo/internal/pong"
-	"github.com/hajimehoshi/ebiten/v2"
+	"bytes"
+	"encoding/gob"
 	"image/color"
 	"log"
 	"net"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type GameEvent int
@@ -44,7 +47,28 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
+	if ebiten.IsKeyPressed(ebiten.KeyW) {
+		handleEvent(W, g.conn)
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyS) {
+		handleEvent(S, g.conn)
+	}
+
 	return nil
+}
+
+func handleEvent(e GameEvent, conn *net.UDPConn) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	if err := enc.Encode(e); err != nil {
+		log.Fatalln("encoding error : ", err)
+	}
+
+	_, err := conn.Write(buf.Bytes())
+	if err != nil {
+		log.Println("writing error : ", err)
+	}
+
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
