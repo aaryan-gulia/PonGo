@@ -2,9 +2,10 @@ package pong
 
 import (
 	"fmt"
-	"image/color"
-
 	"github.com/hajimehoshi/ebiten/v2"
+	"image/color"
+	"log"
+	"net"
 )
 
 func Hello() {
@@ -13,20 +14,21 @@ func Hello() {
 
 type Game struct {
 	state GameState
+	conn  *net.UDPConn
 }
 
 func (g *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		g.state.HandleEvent(W)
+		g.state.HandleEvent(g.conn, W)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		g.state.HandleEvent(S)
+		g.state.HandleEvent(g.conn, S)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
-		g.state.HandleEvent(Up)
+		g.state.HandleEvent(g.conn, Up)
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyArrowDown) {
-		g.state.HandleEvent(Down)
+		g.state.HandleEvent(g.conn, Down)
 	}
 	g.state.PollState()
 
@@ -37,8 +39,8 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	h := screen.Bounds().Dy()
 	scale := float64(h) / Height
 
-	drawRect(PaddleWidth*float64(scale), PaddleHeight*float64(scale), 0, g.state.paddle1*float64(scale), screen)
-	drawRect(PaddleWidth*float64(scale), PaddleHeight*float64(scale), (Width-PaddleWidth)*float64(scale), g.state.paddle2*float64(scale), screen)
+	drawRect(PaddleWidth*float64(scale), PaddleHeight*float64(scale), 0, g.state.Paddle1*float64(scale), screen)
+	drawRect(PaddleWidth*float64(scale), PaddleHeight*float64(scale), (Width-PaddleWidth)*float64(scale), g.state.Paddle2*float64(scale), screen)
 	drawRect(BallWidth*float64(scale), BallHeight*float64(scale), g.state.ball.x*float64(scale), g.state.ball.y*float64(scale), screen)
 }
 
@@ -49,10 +51,21 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 func Run() {
 	var state GameState
 
+	addr, err := net.ResolveUDPAddr("udp", "localhost:8080")
+	if err != nil {
+		log.Fatal("Couldn’t resolve address:", err)
+	}
+
+	conn, err := net.DialUDP("udp", nil, addr)
+	if err != nil {
+		log.Fatal("Connection failed:", err)
+	}
+	defer conn.Close()
+
 	state.Reset()
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("Hello, World!")
-	if err := ebiten.RunGame(&Game{state: state}); err != nil {
+	if err := ebiten.RunGame(&Game{state: state, conn: conn}); err != nil {
 		fmt.Println("Hello World")
 	}
 }

@@ -1,5 +1,12 @@
 package pong
 
+import (
+	"log"
+	"net"
+	"strconv"
+	"time"
+)
+
 const (
 	Width                  float64 = 100
 	Height                 float64 = 100
@@ -29,8 +36,8 @@ type Ball struct {
 }
 
 type GameState struct {
-	paddle1 float64
-	paddle2 float64
+	Paddle1 float64
+	Paddle2 float64
 	points1 int
 	points2 int
 	ball    Ball
@@ -43,17 +50,41 @@ func (g *GameState) PollState() {
 
 }
 
-func (g *GameState) HandleEvent(e GameEvent) {
+func (g *GameState) HandleEvent(conn *net.UDPConn, e GameEvent) {
 	switch e {
 	case W:
-		g.movePaddle1Up()
+		sendMessage(conn, "w")
+		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+		buffer := make([]byte, 1024)
+		n, _, err := conn.ReadFromUDP(buffer)
+		if err != nil {
+			log.Printf("Receive error: %v", err)
+			return
+		}
+		s, _ := strconv.Atoi(string(buffer[:n]))
+		log.Println(s)
+		g.Paddle1 = float64(s)
 	case S:
-		g.movePaddle1Down()
+		sendMessage(conn, "s")
+		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+		buffer := make([]byte, 1024)
+		n, _, err := conn.ReadFromUDP(buffer)
+		if err != nil {
+			log.Printf("Receive error: %v", err)
+			return
+		}
+		s, _ := strconv.Atoi(string(buffer[:n]))
+		log.Println(s)
+		g.Paddle1 = float64(s)
 	case Up:
 		g.movePaddle2Up()
 	case Down:
 		g.movePaddle2Down()
 	}
+}
+
+func sendMessage(conn *net.UDPConn, s string) {
+	conn.Write([]byte(s))
 }
 
 func (g *GameState) Reset() {
@@ -69,10 +100,10 @@ func (g *GameState) moveBall() {
 }
 
 func (g *GameState) paddleCollision() {
-	if g.ball.x < PaddleWidth && g.ball.y < g.paddle1+PaddleHeight && g.ball.y > g.paddle1 {
+	if g.ball.x < PaddleWidth && g.ball.y < g.Paddle1+PaddleHeight && g.ball.y > g.Paddle1 {
 		g.ball.vx *= -1
 	}
-	if g.ball.x > Width-PaddleWidth && g.ball.y < g.paddle2+PaddleHeight && g.ball.y > g.paddle2 {
+	if g.ball.x > Width-PaddleWidth && g.ball.y < g.Paddle2+PaddleHeight && g.ball.y > g.Paddle2 {
 		g.ball.vx *= -1
 	}
 }
@@ -87,33 +118,48 @@ func (g *GameState) wallCollision() {
 }
 
 func (g *GameState) movePaddle1Up() {
-	g.paddle1 -= PaddleVelocity
+	g.Paddle1 -= PaddleVelocity
 
-	if g.paddle1 < 0 {
-		g.paddle1 = 0
+	if g.Paddle1 < 0 {
+		g.Paddle1 = 0
 
 	}
 }
 
 func (g *GameState) movePaddle2Up() {
-	g.paddle2 -= PaddleVelocity
-	if g.paddle2 < 0 {
-		g.paddle2 = 0
+	g.Paddle2 -= PaddleVelocity
+	if g.Paddle2 < 0 {
+		g.Paddle2 = 0
 
 	}
 }
 
 func (g *GameState) movePaddle1Down() {
-	g.paddle1 += PaddleVelocity
-	if g.paddle1+PaddleHeight > Height {
-		g.paddle1 = Height - PaddleHeight
+	g.Paddle1 += PaddleVelocity
+	if g.Paddle1+PaddleHeight > Height {
+		g.Paddle1 = Height - PaddleHeight
 
 	}
 }
 func (g *GameState) movePaddle2Down() {
-	g.paddle2 += PaddleVelocity
-	if g.paddle2+PaddleHeight > Height {
-		g.paddle2 = Height - PaddleHeight
+	g.Paddle2 += PaddleVelocity
+	if g.Paddle2+PaddleHeight > Height {
+		g.Paddle2 = Height - PaddleHeight
+
+	}
+}
+func (g *GameState) MovePaddle1Up() {
+	g.Paddle1 -= PaddleVelocity
+
+	if g.Paddle1 < 0 {
+		g.Paddle1 = 0
+
+	}
+}
+func (g *GameState) MovePaddle1Down() {
+	g.Paddle1 += PaddleVelocity
+	if g.Paddle1+PaddleHeight > Height {
+		g.Paddle1 = Height - PaddleHeight
 
 	}
 }
