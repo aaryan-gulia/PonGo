@@ -85,12 +85,14 @@ func pollState(chState chan<- pong.GameState, conn *net.UDPConn) {
 		n, _, err := conn.ReadFromUDP(buffer)
 		if err != nil {
 			log.Println("read error: ", err)
+			return
 		}
 
 		var s pong.GameState
 		dec := gob.NewDecoder(bytes.NewReader(buffer[:n]))
 		if err := dec.Decode(&s); err != nil {
 			log.Println("decoding error : ", err)
+			return
 		}
 
 		chState <- s

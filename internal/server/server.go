@@ -1,32 +1,57 @@
 package server
 
 import (
-	"PonGo/internal/client"
-	"bytes"
-	"encoding/gob"
-	"fmt"
+	"PonGo/internal/pong"
 	"log"
 	"net"
 )
+
+type Game struct {
+	state   pong.GameState
+	addr    []net.Addr
+	conn    *net.UDPConn
+	chState chan pong.GameState
+}
 
 func Run() {
 	conn := setup()
 	defer conn.Close()
 
 	buffer := make([]byte, 1024)
+	var addr []net.Addr
+	_, clientAddr1, err := conn.ReadFromUDP(buffer)
+	if err != nil {
+		log.Println("read error: ", err)
+	}
+
+	addr = append(addr, clientAddr1)
+	log.Println("client address:", clientAddr1)
 	for {
-		n, _, err := conn.ReadFromUDP(buffer)
+		_, clientAddr2, err := conn.ReadFromUDP(buffer)
+		log.Println("client address:", clientAddr2)
 		if err != nil {
 			log.Println("read error: ", err)
 		}
-
-		var e client.GameEvent
-		dec := gob.NewDecoder(bytes.NewReader(buffer[:n]))
-		if err := dec.Decode(&e); err != nil {
-			log.Println("decoding error : ", err)
+		if clientAddr2.String() != clientAddr1.String() {
+			addr = append(addr, clientAddr1)
+			break
 		}
-		fmt.Println("event: ", e)
 	}
+
+	runGame(addr, conn)
+}
+
+func runGame(addr []net.Addr, conn *net.UDPConn) {
+	game := Game{addr: addr, conn: conn, chState: make(chan pong.GameState)}
+
+	game.state.Reset()
+
+	if len(game.addr) == 2 {
+		log.Println("starting game")
+	} else {
+		log.Println("not enough players connected")
+	}
+
 }
 
 func setup() *net.UDPConn {
