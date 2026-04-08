@@ -2,13 +2,15 @@ package server
 
 import (
 	"PonGo/internal/pong"
+	"bytes"
+	"encoding/gob"
 	"log"
 	"net"
 )
 
 type Game struct {
 	state   pong.GameState
-	addr    []net.Addr
+	addr    []*net.UDPAddr
 	conn    *net.UDPConn
 	chState chan pong.GameState
 }
@@ -18,7 +20,7 @@ func Run() {
 	defer conn.Close()
 
 	buffer := make([]byte, 1024)
-	var addr []net.Addr
+	var addr []*net.UDPAddr
 	_, clientAddr1, err := conn.ReadFromUDP(buffer)
 	if err != nil {
 		log.Println("read error: ", err)
@@ -33,7 +35,7 @@ func Run() {
 			log.Println("read error: ", err)
 		}
 		if clientAddr2.String() != clientAddr1.String() {
-			addr = append(addr, clientAddr1)
+			addr = append(addr, clientAddr2)
 			break
 		}
 	}
@@ -41,7 +43,7 @@ func Run() {
 	runGame(addr, conn)
 }
 
-func runGame(addr []net.Addr, conn *net.UDPConn) {
+func runGame(addr []*net.UDPAddr, conn *net.UDPConn) {
 	game := Game{addr: addr, conn: conn, chState: make(chan pong.GameState)}
 
 	game.state.Reset()
@@ -50,6 +52,26 @@ func runGame(addr []net.Addr, conn *net.UDPConn) {
 		log.Println("starting game")
 	} else {
 		log.Println("not enough players connected")
+	}
+
+	for {
+		game.state.PollState()
+
+		var buf bytes.Buffer
+		enc := gob.NewEncoder(&buf)
+		if err := enc.Encode(game.state); err != nil {
+			log.Fatalln("encoding error : ", err)
+		}
+
+		_, err := conn.WriteToUDP(buf.Bytes(), game.addr[0])
+		if err != nil {
+			log.Println("writing error : ", err)
+		}
+		_, err = conn.WriteToUDP(buf.Bytes(), game.addr[1])
+		if err != nil {
+			log.Println("writing error : ", err)
+		}
+
 	}
 
 }
