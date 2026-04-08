@@ -42,8 +42,9 @@ const (
 )
 
 type Game struct {
-	state pong.GameState
-	conn  *net.UDPConn
+	state   pong.GameState
+	conn    *net.UDPConn
+	chState <-chan pong.GameState
 }
 
 func (g *Game) Update() error {
@@ -52,6 +53,12 @@ func (g *Game) Update() error {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		handleEvent(S, g.conn)
+	}
+
+	select {
+	case state := <-g.chState:
+		g.state = state
+	default:
 	}
 
 	return nil
@@ -67,6 +74,26 @@ func handleEvent(e GameEvent, conn *net.UDPConn) {
 	_, err := conn.Write(buf.Bytes())
 	if err != nil {
 		log.Println("writing error : ", err)
+	}
+
+}
+
+func pollState(chState chan<- pong.GameState, conn *net.UDPConn) {
+
+	buffer := make([]byte, 1024)
+	for {
+		n, _, err := conn.ReadFromUDP(buffer)
+		if err != nil {
+			log.Println("read error: ", err)
+		}
+
+		var s pong.GameState
+		dec := gob.NewDecoder(bytes.NewReader(buffer[:n]))
+		if err := dec.Decode(&s); err != nil {
+			log.Println("decoding error : ", err)
+		}
+
+		chState <- s
 	}
 
 }
@@ -113,8 +140,11 @@ func Run() {
 	}
 	defer conn.Close()
 
+	chState := make(chan pong.GameState)
+	go pollState(chState, conn)
+
 	state.Reset()
-	if err := ebiten.RunGame(&Game{state: state, conn: conn}); err != nil {
+	if err := ebiten.RunGame(&Game{state: state, conn: conn, chState: chState}); err != nil {
 		log.Fatalln("game engine error :", err)
 	}
 }

@@ -17,13 +17,13 @@ func Run() {
 	for {
 		n, _, err := conn.ReadFromUDP(buffer)
 		if err != nil {
-			log.Printf("read error: ", err)
+			log.Println("read error: ", err)
 		}
 
 		var e client.GameEvent
 		dec := gob.NewDecoder(bytes.NewReader(buffer[:n]))
 		if err := dec.Decode(&e); err != nil {
-			log.Panicln("decoding error : ", err)
+			log.Println("decoding error : ", err)
 		}
 		fmt.Println("event: ", e)
 	}
