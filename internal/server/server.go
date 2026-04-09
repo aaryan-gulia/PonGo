@@ -91,13 +91,11 @@ func (g *Game) handleInput() {
 		var e pong.GameEvent
 		dec := gob.NewDecoder(bytes.NewReader(buffer[:n]))
 		if err := dec.Decode(&e); err != nil {
-			log.Println("decoding error : ", err)
 			continue
 		}
 
 		if clientAddr.String() == g.addr[0].String() {
 			if e == pong.W {
-				log.Println(e)
 				g.state.MovePaddle1Up()
 			}
 			if e == pong.S {
@@ -106,7 +104,6 @@ func (g *Game) handleInput() {
 		}
 		if clientAddr.String() == g.addr[1].String() {
 			if e == pong.W {
-				log.Println(e)
 				g.state.MovePaddle2Up()
 			}
 			if e == pong.S {
