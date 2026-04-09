@@ -173,3 +173,18 @@ func (g *GameState) MovePaddle1Down() {
 
 	}
 }
+func (g *GameState) MovePaddle2Up() {
+	g.Paddle2 -= PaddleVelocity
+
+	if g.Paddle2 < 0 {
+		g.Paddle2 = 0
+
+	}
+}
+func (g *GameState) MovePaddle2Down() {
+	g.Paddle2 += PaddleVelocity
+	if g.Paddle2+PaddleHeight > Height {
+		g.Paddle2 = Height - PaddleHeight
+
+	}
+}

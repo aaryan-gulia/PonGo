@@ -54,6 +54,8 @@ func runGame(addr []*net.UDPAddr, conn *net.UDPConn) {
 		log.Println("not enough players connected")
 	}
 
+	go game.handleInput()
+
 	for {
 		game.state.PollState()
 
@@ -70,6 +72,46 @@ func runGame(addr []*net.UDPAddr, conn *net.UDPConn) {
 		_, err = conn.WriteToUDP(buf.Bytes(), game.addr[1])
 		if err != nil {
 			log.Println("writing error : ", err)
+		}
+
+	}
+
+}
+
+func (g *Game) handleInput() {
+	buffer := make([]byte, 1024)
+
+	for {
+		n, clientAddr, err := g.conn.ReadFromUDP(buffer)
+		if err != nil {
+			log.Println("reading error : ", err)
+			continue
+		}
+
+		var e pong.GameEvent
+		dec := gob.NewDecoder(bytes.NewReader(buffer[:n]))
+		if err := dec.Decode(&e); err != nil {
+			log.Println("decoding error : ", err)
+			continue
+		}
+
+		if clientAddr.String() == g.addr[0].String() {
+			if e == pong.W {
+				log.Println(e)
+				g.state.MovePaddle1Up()
+			}
+			if e == pong.S {
+				g.state.MovePaddle1Down()
+			}
+		}
+		if clientAddr.String() == g.addr[1].String() {
+			if e == pong.W {
+				log.Println(e)
+				g.state.MovePaddle2Up()
+			}
+			if e == pong.S {
+				g.state.MovePaddle2Down()
+			}
 		}
 
 	}
