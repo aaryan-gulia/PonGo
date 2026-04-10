@@ -6,6 +6,7 @@ import (
 	"encoding/gob"
 	"log"
 	"net"
+	"time"
 )
 
 type Game struct {
@@ -19,28 +20,30 @@ func Run() {
 	conn := setup()
 	defer conn.Close()
 
-	buffer := make([]byte, 1024)
-	var addr []*net.UDPAddr
-	_, clientAddr1, err := conn.ReadFromUDP(buffer)
-	if err != nil {
-		log.Println("read error: ", err)
-	}
-
-	addr = append(addr, clientAddr1)
-	log.Println("client address:", clientAddr1)
 	for {
-		_, clientAddr2, err := conn.ReadFromUDP(buffer)
-		log.Println("client address:", clientAddr2)
+
+		buffer := make([]byte, 1024)
+		var addr []*net.UDPAddr
+		_, clientAddr1, err := conn.ReadFromUDP(buffer)
 		if err != nil {
 			log.Println("read error: ", err)
 		}
-		if clientAddr2.String() != clientAddr1.String() {
-			addr = append(addr, clientAddr2)
-			break
-		}
-	}
 
-	runGame(addr, conn)
+		addr = append(addr, clientAddr1)
+		log.Println("client address:", clientAddr1)
+		for {
+			_, clientAddr2, err := conn.ReadFromUDP(buffer)
+			log.Println("client address:", clientAddr2)
+			if err != nil {
+				log.Println("read error: ", err)
+			}
+			if clientAddr2.String() != clientAddr1.String() {
+				addr = append(addr, clientAddr2)
+				break
+			}
+		}
+		runGame(addr, conn)
+	}
 }
 
 func runGame(addr []*net.UDPAddr, conn *net.UDPConn) {
@@ -54,17 +57,23 @@ func runGame(addr []*net.UDPAddr, conn *net.UDPConn) {
 		log.Println("not enough players connected")
 	}
 
-	go game.handleInput()
+	end := make(chan struct{})
+
+	go game.handleInput(end)
 
 	for {
+		select {
+		case <-end:
+			log.Println("game ended")
+			return
+		default:
+		}
 		game.state.PollState()
-
 		var buf bytes.Buffer
 		enc := gob.NewEncoder(&buf)
 		if err := enc.Encode(game.state); err != nil {
 			log.Fatalln("encoding error : ", err)
 		}
-
 		_, err := conn.WriteToUDP(buf.Bytes(), game.addr[0])
 		if err != nil {
 			log.Println("writing error : ", err)
@@ -73,28 +82,35 @@ func runGame(addr []*net.UDPAddr, conn *net.UDPConn) {
 		if err != nil {
 			log.Println("writing error : ", err)
 		}
-
 	}
-
 }
 
-func (g *Game) handleInput() {
+func (g *Game) handleInput(end chan struct{}) {
 	buffer := make([]byte, 1024)
-
+	timer1 := time.NewTimer(time.Second)
+	timer2 := time.NewTimer(time.Second)
 	for {
+		select {
+		case <-timer1.C:
+			close(end)
+			return
+		case <-timer2.C:
+			close(end)
+			return
+		default:
+		}
 		n, clientAddr, err := g.conn.ReadFromUDP(buffer)
 		if err != nil {
 			log.Println("reading error : ", err)
 			continue
 		}
-
 		var e pong.GameEvent
 		dec := gob.NewDecoder(bytes.NewReader(buffer[:n]))
 		if err := dec.Decode(&e); err != nil {
 			continue
 		}
-
 		if clientAddr.String() == g.addr[0].String() {
+			timer1.Reset(time.Second)
 			if e == pong.W {
 				g.state.MovePaddle1Up()
 			}
@@ -103,6 +119,7 @@ func (g *Game) handleInput() {
 			}
 		}
 		if clientAddr.String() == g.addr[1].String() {
+			timer2.Reset(time.Second)
 			if e == pong.W {
 				g.state.MovePaddle2Up()
 			}
@@ -110,9 +127,7 @@ func (g *Game) handleInput() {
 				g.state.MovePaddle2Down()
 			}
 		}
-
 	}
-
 }
 
 func setup() *net.UDPConn {
