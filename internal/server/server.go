@@ -30,10 +30,8 @@ func Run() {
 		}
 
 		addr = append(addr, clientAddr1)
-		log.Println("client address:", clientAddr1)
 		for {
 			_, clientAddr2, err := conn.ReadFromUDP(buffer)
-			log.Println("client address:", clientAddr2)
 			if err != nil {
 				log.Println("read error: ", err)
 			}

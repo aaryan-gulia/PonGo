@@ -1,12 +1,5 @@
 package pong
 
-import (
-	"log"
-	"net"
-	"strconv"
-	"time"
-)
-
 const (
 	Width                  float64 = 100
 	Height                 float64 = 100
@@ -24,13 +17,12 @@ type GameEvent int
 const (
 	W GameEvent = iota
 	S
-	Up
-	Down
+	P
+	Q
+	N
 )
 
 type Ball struct {
-	x  float64
-	y  float64
 	vx float64
 	vy float64
 	X  float64
@@ -42,7 +34,6 @@ type GameState struct {
 	Paddle2 float64
 	points1 int
 	points2 int
-	ball    Ball
 	Ball    Ball
 }
 
@@ -53,111 +44,37 @@ func (g *GameState) PollState() {
 
 }
 
-func (g *GameState) HandleEvent(conn *net.UDPConn, e GameEvent) {
-	switch e {
-	case W:
-		sendMessage(conn, "w")
-		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-		buffer := make([]byte, 1024)
-		n, _, err := conn.ReadFromUDP(buffer)
-		if err != nil {
-			log.Printf("Receive error: %v", err)
-			return
-		}
-		s, _ := strconv.Atoi(string(buffer[:n]))
-		log.Println(s)
-		g.Paddle1 = float64(s)
-	case S:
-		sendMessage(conn, "s")
-		conn.SetReadDeadline(time.Now().Add(5 * time.Second))
-		buffer := make([]byte, 1024)
-		n, _, err := conn.ReadFromUDP(buffer)
-		if err != nil {
-			log.Printf("Receive error: %v", err)
-			return
-		}
-		s, _ := strconv.Atoi(string(buffer[:n]))
-		log.Println(s)
-		g.Paddle1 = float64(s)
-	case Up:
-		g.movePaddle2Up()
-	case Down:
-		g.movePaddle2Down()
-	}
-}
-
-func sendMessage(conn *net.UDPConn, s string) {
-	conn.Write([]byte(s))
-}
-
 func (g *GameState) Reset() {
-	g.ball.x = Width / 2
-	g.ball.y = Height / 2
-	g.ball.vx = BallVelocityBase
-	g.ball.vy = BallVelocityBase
-	g.ball.X = g.ball.x
-	g.ball.Y = g.ball.y
-	g.Ball = g.ball
+	g.Ball.X = Width / 2
+	g.Ball.Y = Height / 2
+	g.Ball.vx = BallVelocityBase
+	g.Ball.vy = BallVelocityBase
 }
 
 func (g *GameState) moveBall() {
-	g.ball.x += g.ball.vx
-	g.ball.X = g.ball.x
-	g.ball.y += g.ball.vy
-	g.ball.Y = g.ball.y
-	g.Ball = g.ball
+	g.Ball.X += g.Ball.vx
+	g.Ball.Y += g.Ball.vy
 
 }
 
 func (g *GameState) paddleCollision() {
-	if g.ball.x < PaddleWidth && g.ball.y < g.Paddle1+PaddleHeight && g.ball.y > g.Paddle1 {
-		g.ball.vx *= -1
+	if g.Ball.X < PaddleWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y > g.Paddle1 {
+		g.Ball.vx *= -1
 	}
-	if g.ball.x > Width-PaddleWidth && g.ball.y < g.Paddle2+PaddleHeight && g.ball.y > g.Paddle2 {
-		g.ball.vx *= -1
+	if g.Ball.X > Width-PaddleWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y > g.Paddle2 {
+		g.Ball.vx *= -1
 	}
 }
 
 func (g *GameState) wallCollision() {
-	if g.ball.y < 0 || g.ball.y+BallHeight > Height {
-		g.ball.vy *= -1
+	if g.Ball.Y < 0 || g.Ball.Y+BallHeight > Height {
+		g.Ball.vy *= -1
 	}
-	if g.ball.x < 0 || g.ball.x > Width {
+	if g.Ball.X < 0 || g.Ball.X > Width {
 		g.Reset()
 	}
 }
 
-func (g *GameState) movePaddle1Up() {
-	g.Paddle1 -= PaddleVelocity
-
-	if g.Paddle1 < 0 {
-		g.Paddle1 = 0
-
-	}
-}
-
-func (g *GameState) movePaddle2Up() {
-	g.Paddle2 -= PaddleVelocity
-	if g.Paddle2 < 0 {
-		g.Paddle2 = 0
-
-	}
-}
-
-func (g *GameState) movePaddle1Down() {
-	g.Paddle1 += PaddleVelocity
-	if g.Paddle1+PaddleHeight > Height {
-		g.Paddle1 = Height - PaddleHeight
-
-	}
-}
-func (g *GameState) movePaddle2Down() {
-	g.Paddle2 += PaddleVelocity
-	if g.Paddle2+PaddleHeight > Height {
-		g.Paddle2 = Height - PaddleHeight
-
-	}
-}
 func (g *GameState) MovePaddle1Up() {
 	g.Paddle1 -= PaddleVelocity
 

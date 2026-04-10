@@ -11,18 +11,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type GameEvent int
 type ConnectionState int
 type GameType int
 type ClientState int
-
-const (
-	W GameEvent = iota
-	S
-	P
-	Q
-	N
-)
 
 const (
 	Connected ConnectionState = iota
@@ -48,18 +39,18 @@ type Game struct {
 }
 
 func (g *Game) Update() error {
-	e := N
+	e := pong.N
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
-		e = W
+		e = pong.W
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
-		e = S
+		e = pong.S
 	}
 	handleEvent(e, g.conn)
 	return nil
 }
 
-func handleEvent(e GameEvent, conn *net.UDPConn) {
+func handleEvent(e pong.GameEvent, conn *net.UDPConn) {
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
 	if err := enc.Encode(e); err != nil {
