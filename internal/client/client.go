@@ -11,33 +11,6 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-type ConnectionState int
-type GameType int
-type ClientState int
-
-const (
-	Connected ConnectionState = iota
-	Waiting
-	Paused
-	Playing
-	Disconnected
-)
-
-const (
-	Ai GameType = iota
-	OnlinePvp
-)
-
-const (
-	MainMenu ClientState = iota
-	GamePlay
-)
-
-type Game struct {
-	state pong.GameState
-	conn  *net.UDPConn
-}
-
 func (g *Game) Update() error {
 	e := pong.N
 	if ebiten.IsKeyPressed(ebiten.KeyW) {
