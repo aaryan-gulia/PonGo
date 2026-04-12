@@ -1,11 +1,27 @@
 package client
 
 import (
+	"bytes"
+	"image/color"
 	"log"
 
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
+	"github.com/hajimehoshi/ebiten/v2/text/v2"
+	"golang.org/x/image/font/gofont/goregular"
 )
+
+var fontFace text.GoTextFace
+
+func init() {
+	s, err := text.NewGoTextFaceSource(bytes.NewReader(goregular.TTF))
+	if err != nil {
+		log.Fatalln("font loading error : ", err)
+	}
+
+	fontFace = text.GoTextFace{Source: s, Size: 24}
+
+}
 
 type MainMenuOptions int
 
@@ -47,9 +63,16 @@ func (m *MainMenu) update() (MainMenuOptions, error) {
 	return None, nil
 }
 
-func (m *MainMenu) Draw(screen *ebiten.Image) {}
+func (m *MainMenu) Draw(screen *ebiten.Image) {
+	m.draw(screen)
+}
 
 func (m *MainMenu) draw(screen *ebiten.Image) {
+
+	menuOp := &text.DrawOptions{}
+	menuOp.GeoM.Translate(300, 40)
+	menuOp.ColorScale.ScaleWithColor(color.White)
+	text.Draw(screen, "Menu", &fontFace, menuOp)
 
 }
 
