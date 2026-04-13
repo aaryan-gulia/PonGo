@@ -12,28 +12,27 @@ import (
 )
 
 var fontFace text.GoTextFace
+var mainMenuOptions = [3]string{"Play AI", "Play Online PVP", "Quit"}
 
 func init() {
 	s, err := text.NewGoTextFaceSource(bytes.NewReader(goregular.TTF))
 	if err != nil {
 		log.Fatalln("font loading error : ", err)
 	}
-
 	fontFace = text.GoTextFace{Source: s, Size: 24}
-
 }
 
-type MainMenuOptions int
+type MainMenuOption int
 
 const (
-	PlayAI MainMenuOptions = iota
+	PlayAI MainMenuOption = iota
 	PlayOnlinePvp
 	Quit
 	None
 )
 
 type MainMenu struct {
-	selected MainMenuOptions
+	selected MainMenuOption
 }
 
 func (m *MainMenu) Update() error {
@@ -44,7 +43,7 @@ func (m *MainMenu) Update() error {
 	return err
 }
 
-func (m *MainMenu) update() (MainMenuOptions, error) {
+func (m *MainMenu) update() (MainMenuOption, error) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
 		if m.selected == PlayAI {
 			return None, nil
@@ -69,10 +68,17 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 
 func (m *MainMenu) draw(screen *ebiten.Image) {
 
-	menuOp := &text.DrawOptions{}
-	menuOp.GeoM.Translate(300, 40)
-	menuOp.ColorScale.ScaleWithColor(color.White)
-	text.Draw(screen, "Menu", &fontFace, menuOp)
+	h := screen.Bounds().Dy()
+	w := screen.Bounds().Dx()
+
+	for i, o := range mainMenuOptions {
+		menuOp := &text.DrawOptions{}
+		menuOp.GeoM.Translate(float64(w)/2, float64(h)/2-50+float64(i)*50)
+		if i == int(m.selected) {
+			menuOp.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 0})
+		}
+		text.Draw(screen, o, &fontFace, menuOp)
+	}
 
 }
 
@@ -81,6 +87,8 @@ func (m *MainMenu) Layout(outsideWidth, outsideHeight int) (screenWidth, screenH
 }
 
 func RunMainMenu() {
+	ebiten.SetWindowSize(640, 480)
+	ebiten.SetWindowTitle("Menu Test")
 	if err := ebiten.RunGame(&MainMenu{}); err != nil {
 		log.Println("game engine error : ", err)
 	}
