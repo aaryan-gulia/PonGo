@@ -11,6 +11,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type Client struct {
+	game *Game
+}
+
 func (g *Game) Update() error {
 	e := pong.N
 	if ebiten.IsKeyPressed(ebiten.KeyW) {

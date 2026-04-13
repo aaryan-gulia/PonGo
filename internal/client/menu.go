@@ -67,10 +67,8 @@ func (m *MainMenu) Draw(screen *ebiten.Image) {
 }
 
 func (m *MainMenu) draw(screen *ebiten.Image) {
-
 	h := screen.Bounds().Dy()
 	w := screen.Bounds().Dx()
-
 	for i, o := range mainMenuOptions {
 		menuOp := &text.DrawOptions{}
 		menuOp.GeoM.Translate(float64(w)/2, float64(h)/2-50+float64(i)*50)
@@ -79,7 +77,6 @@ func (m *MainMenu) draw(screen *ebiten.Image) {
 		}
 		text.Draw(screen, o, &fontFace, menuOp)
 	}
-
 }
 
 func (m *MainMenu) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
