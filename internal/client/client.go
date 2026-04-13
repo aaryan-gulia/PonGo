@@ -1,19 +1,37 @@
 package client
 
 import (
-	"PonGo/internal/pong"
 	"log"
-	"net"
 
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type ClientState int
+
+const (
+	MenuPage ClientState = iota
+	GameAIPage
+	GameOnlinePVPPage
+	Exit
+)
+
+type Page interface {
+	update() (ClientState, error)
+	draw(screen *ebiten.Image)
+	setup()
+	close()
+}
+
 type Client struct {
-	game *GameOnlinePVP
+	page  Page
+	state ClientState
 }
 
 func (c *Client) Update() error {
-	c.game.update()
+	p, _ := c.page.update()
+	if p == Exit {
+		return ebiten.Termination
+	}
 	return nil
 }
 
@@ -22,31 +40,18 @@ func (c *Client) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHei
 }
 
 func (c *Client) Draw(screen *ebiten.Image) {
-	c.game.draw(screen)
-
+	c.page.draw(screen)
 }
 
 func Run() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("game client")
-	var state pong.GameState
 
-	addr, err := net.ResolveUDPAddr("udp", "localhost:8080")
-	if err != nil {
-		log.Fatal("Couldn’t resolve address:", err)
-	}
+	game := GameOnlinePVP{}
+	game.setup()
+	defer game.close()
 
-	conn, err := net.DialUDP("udp", nil, addr)
-	if err != nil {
-		log.Fatal("Connection failed:", err)
-	}
-	defer conn.Close()
-	state.Reset()
-
-	game := GameOnlinePVP{Game: Game{state: state}, conn: conn}
-	go game.pollState()
-
-	if err := ebiten.RunGame(&Client{game: &game}); err != nil {
+	if err := ebiten.RunGame(&Client{page: &game}); err != nil {
 		log.Fatalln("game engine error :", err)
 	}
 }

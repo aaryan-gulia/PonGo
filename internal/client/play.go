@@ -13,6 +13,7 @@ import (
 type GameOnlinePVP struct {
 	Game
 	conn *net.UDPConn
+	end  chan struct{}
 }
 
 type GameAI struct {
@@ -23,10 +24,35 @@ type Game struct {
 	state pong.GameState
 }
 
-func (g *GameOnlinePVP) update() error {
+func (g *GameOnlinePVP) setup() {
+
+	g.state.Reset()
+
+	addr, err := net.ResolveUDPAddr("udp", "localhost:8080")
+	if err != nil {
+		log.Fatal("Couldn’t resolve address:", err)
+	}
+	g.conn, err = net.DialUDP("udp", nil, addr)
+	if err != nil {
+		log.Fatal("Connection failed:", err)
+	}
+	g.end = make(chan struct{})
+
+	go g.pollState()
+}
+
+func (g *GameOnlinePVP) close() {
+	g.conn.Close()
+	close(g.end)
+}
+
+func (g *GameOnlinePVP) update() (ClientState, error) {
 	e := pollEvent()
+	if e == pong.Q {
+		return Exit, nil
+	}
 	g.handleEvent(e)
-	return nil
+	return GameOnlinePVPPage, nil
 }
 
 func pollEvent() pong.GameEvent {
@@ -36,6 +62,9 @@ func pollEvent() pong.GameEvent {
 	}
 	if ebiten.IsKeyPressed(ebiten.KeyS) {
 		e = pong.S
+	}
+	if ebiten.IsKeyPressed(ebiten.KeyEscape) {
+		e = pong.Q
 	}
 	return e
 }
@@ -55,6 +84,11 @@ func (g *GameOnlinePVP) handleEvent(e pong.GameEvent) {
 func (g *GameOnlinePVP) pollState() {
 	buffer := make([]byte, 1024)
 	for {
+		select {
+		case <-g.end:
+			return
+		default:
+		}
 		n, _, err := g.conn.ReadFromUDP(buffer)
 		if err != nil {
 			log.Println("read error: ", err)
