@@ -38,7 +38,7 @@ func (c *Client) Update() error {
 	case MenuPage:
 		c.page = &MainMenu{}
 	case GameAIPage:
-		c.page = &GameOnlinePVP{}
+		c.page = &GameAI{}
 	case GameOnlinePVPPage:
 		c.page = &GameOnlinePVP{}
 	case Exit:
@@ -60,7 +60,10 @@ func Run() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("game client")
 
-	if err := ebiten.RunGame(&Client{page: &MainMenu{}}); err != nil {
+	c := Client{page: &MainMenu{}}
+	defer c.page.close()
+
+	if err := ebiten.RunGame(&c); err != nil {
 		log.Fatalln("game engine error :", err)
 	}
 }

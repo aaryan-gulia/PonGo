@@ -10,18 +10,14 @@ import (
 	"net"
 )
 
+type Game struct {
+	state pong.GameState
+}
+
 type GameOnlinePVP struct {
 	Game
 	conn *net.UDPConn
 	end  chan struct{}
-}
-
-type GameAI struct {
-	Game
-}
-
-type Game struct {
-	state pong.GameState
 }
 
 func (g *GameOnlinePVP) setup() {
@@ -121,4 +117,32 @@ func drawRect(w, h, x, y float64, s *ebiten.Image) {
 	op.GeoM.Translate(x, y)
 	op.ColorScale.ScaleWithColor(color.White)
 	s.DrawImage(newImage, op)
+}
+
+type GameAI struct {
+	Game
+}
+
+func (g *GameAI) setup() {
+	g.state.Reset()
+	log.Println("starting ai game")
+}
+func (g *GameAI) close() {}
+
+func (g *GameAI) update() (ClientState, error) {
+	e := pollEvent()
+	if e == pong.Q {
+		return MenuPage, nil
+	}
+	g.handleEvent(e)
+	return GameAIPage, nil
+}
+
+func (g *GameAI) handleEvent(e pong.GameEvent) {
+	if e == pong.W {
+		g.state.MovePaddle1Up()
+	}
+	if e == pong.S {
+		g.state.MovePaddle1Down()
+	}
 }
