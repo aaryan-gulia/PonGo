@@ -145,4 +145,10 @@ func (g *GameAI) handleEvent(e pong.GameEvent) {
 	if e == pong.S {
 		g.state.MovePaddle1Down()
 	}
+	if g.state.Ball.Y > g.state.Paddle2+pong.PaddleHeight/2 {
+		g.state.MovePaddle2Down()
+	} else {
+		g.state.MovePaddle2Up()
+	}
+	g.state.PollState()
 }
