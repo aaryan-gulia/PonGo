@@ -28,38 +28,47 @@ const (
 	PlayAI MainMenuOption = iota
 	PlayOnlinePvp
 	Quit
-	None
 )
 
 type MainMenu struct {
 	selected MainMenuOption
 }
 
+func (m *MainMenu) setup() {}
+func (m *MainMenu) close() {}
+
 func (m *MainMenu) Update() error {
 	selected, err := m.update()
-	if selected != None {
+	if selected != MenuPage {
 		log.Println(selected)
 	}
 	return err
 }
 
-func (m *MainMenu) update() (MainMenuOption, error) {
+func (m *MainMenu) update() (ClientState, error) {
 	if inpututil.IsKeyJustPressed(ebiten.KeyW) {
 		if m.selected == PlayAI {
-			return None, nil
+			return MenuPage, nil
 		}
 		m.selected--
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyS) {
 		if m.selected == Quit {
-			return None, nil
+			return MenuPage, nil
 		}
 		m.selected++
 	}
 	if inpututil.IsKeyJustPressed(ebiten.KeyEnter) {
-		return m.selected, nil
+		switch m.selected {
+		case PlayAI:
+			return GameAIPage, nil
+		case PlayOnlinePvp:
+			return GameOnlinePVPPage, nil
+		case Quit:
+			return Exit, nil
+		}
 	}
-	return None, nil
+	return MenuPage, nil
 }
 
 func (m *MainMenu) Draw(screen *ebiten.Image) {

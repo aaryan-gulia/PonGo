@@ -49,7 +49,7 @@ func (g *GameOnlinePVP) close() {
 func (g *GameOnlinePVP) update() (ClientState, error) {
 	e := pollEvent()
 	if e == pong.Q {
-		return Exit, nil
+		return MenuPage, nil
 	}
 	g.handleEvent(e)
 	return GameOnlinePVPPage, nil

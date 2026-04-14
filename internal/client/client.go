@@ -29,9 +29,22 @@ type Client struct {
 
 func (c *Client) Update() error {
 	p, _ := c.page.update()
-	if p == Exit {
+	if p == c.state {
+		return nil
+	}
+	c.page.close()
+	c.state = p
+	switch c.state {
+	case MenuPage:
+		c.page = &MainMenu{}
+	case GameAIPage:
+		c.page = &GameOnlinePVP{}
+	case GameOnlinePVPPage:
+		c.page = &GameOnlinePVP{}
+	case Exit:
 		return ebiten.Termination
 	}
+	c.page.setup()
 	return nil
 }
 
@@ -47,11 +60,7 @@ func Run() {
 	ebiten.SetWindowSize(640, 480)
 	ebiten.SetWindowTitle("game client")
 
-	game := GameOnlinePVP{}
-	game.setup()
-	defer game.close()
-
-	if err := ebiten.RunGame(&Client{page: &game}); err != nil {
+	if err := ebiten.RunGame(&Client{page: &MainMenu{}}); err != nil {
 		log.Fatalln("game engine error :", err)
 	}
 }
