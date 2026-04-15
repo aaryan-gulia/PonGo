@@ -8,8 +8,8 @@ const (
 	PaddleVelocity         float64 = 3
 	BallHeight             float64 = 2
 	BallWidth              float64 = 2
-	BallVelocityBase       float64 = 1
-	BallVelocityMultiplier float64 = 2
+	BallVelocityBase       float64 = 0.5
+	BallVelocityMultiplier float64 = 1.5
 )
 
 type GameEvent int
@@ -50,6 +50,12 @@ func (g *GameState) Reset() {
 	g.Ball.Y = Height / 2
 	g.Ball.vx = BallVelocityBase
 	g.Ball.vy = BallVelocityBase
+	g.hitCount = 0
+}
+
+func (g *GameState) center() {
+	g.Ball.X = Width / 2
+	g.Ball.Y = Height / 2
 }
 
 func (g *GameState) moveBall() {
@@ -62,10 +68,18 @@ func (g *GameState) paddleCollision() {
 	if g.Ball.X < PaddleWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y > g.Paddle1 {
 		g.Ball.vx *= -1
 		g.hitCount++
+		if g.hitCount%4 == 0 && g.hitCount < 20 {
+			g.Ball.vx *= BallVelocityMultiplier
+			g.Ball.vy *= BallVelocityMultiplier
+		}
 	}
 	if g.Ball.X > Width-PaddleWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y > g.Paddle2 {
 		g.Ball.vx *= -1
 		g.hitCount++
+		if g.hitCount%4 == 0 && g.hitCount < 15 {
+			g.Ball.vx *= BallVelocityMultiplier
+			g.Ball.vy *= BallVelocityMultiplier
+		}
 	}
 }
 
