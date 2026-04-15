@@ -30,11 +30,12 @@ type Ball struct {
 }
 
 type GameState struct {
-	Paddle1 float64
-	Paddle2 float64
-	points1 int
-	points2 int
-	Ball    Ball
+	Paddle1  float64
+	Paddle2  float64
+	Points1  uint
+	Points2  uint
+	Ball     Ball
+	hitCount uint
 }
 
 func (g *GameState) PollState() {
@@ -60,9 +61,11 @@ func (g *GameState) moveBall() {
 func (g *GameState) paddleCollision() {
 	if g.Ball.X < PaddleWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y > g.Paddle1 {
 		g.Ball.vx *= -1
+		g.hitCount++
 	}
 	if g.Ball.X > Width-PaddleWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y > g.Paddle2 {
 		g.Ball.vx *= -1
+		g.hitCount++
 	}
 }
 
@@ -70,7 +73,12 @@ func (g *GameState) wallCollision() {
 	if g.Ball.Y < 0 || g.Ball.Y+BallHeight > Height {
 		g.Ball.vy *= -1
 	}
-	if g.Ball.X < 0 || g.Ball.X > Width {
+	if g.Ball.X < 0 {
+		g.Points2++
+		g.Reset()
+	}
+	if g.Ball.X > Width {
+		g.Points1++
 		g.Reset()
 	}
 }

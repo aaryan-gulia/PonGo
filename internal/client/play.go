@@ -125,8 +125,8 @@ type GameAI struct {
 
 func (g *GameAI) setup() {
 	g.state.Reset()
-	log.Println("starting ai game")
 }
+
 func (g *GameAI) close() {}
 
 func (g *GameAI) update() (ClientState, error) {
