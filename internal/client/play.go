@@ -4,10 +4,12 @@ import (
 	"PonGo/internal/pong"
 	"bytes"
 	"encoding/gob"
-	"github.com/hajimehoshi/ebiten/v2"
 	"image/color"
 	"log"
 	"net"
+	"strconv"
+
+	"github.com/hajimehoshi/ebiten/v2"
 )
 
 type Game struct {
@@ -103,6 +105,9 @@ func (g *GameOnlinePVP) pollState() {
 func (g *Game) draw(screen *ebiten.Image) {
 	h := screen.Bounds().Dy()
 	scale := float64(h) / pong.Height
+
+	drawText(screen, scale*25, scale*10, color.White, strconv.Itoa(int(g.state.Points1)))
+	drawText(screen, scale*75, scale*10, color.White, strconv.Itoa(int(g.state.Points2)))
 
 	drawRect(pong.PaddleWidth*float64(scale), pong.PaddleHeight*float64(scale), 0, g.state.Paddle1*float64(scale), screen)
 	drawRect(pong.PaddleWidth*float64(scale), pong.PaddleHeight*float64(scale), (pong.Width-pong.PaddleWidth)*float64(scale), g.state.Paddle2*float64(scale), screen)
