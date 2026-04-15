@@ -79,13 +79,19 @@ func (m *MainMenu) draw(screen *ebiten.Image) {
 	h := screen.Bounds().Dy()
 	w := screen.Bounds().Dx()
 	for i, o := range mainMenuOptions {
-		menuOp := &text.DrawOptions{}
-		menuOp.GeoM.Translate(float64(w)/2, float64(h)/2-50+float64(i)*50)
 		if i == int(m.selected) {
-			menuOp.ColorScale.ScaleWithColor(color.RGBA{255, 0, 0, 0})
+			drawText(screen, float64(w)/2, float64(h)/2-50+float64(i)*50, color.RGBA{255, 0, 0, 1}, o)
 		}
-		text.Draw(screen, o, &fontFace, menuOp)
+		drawText(screen, float64(w)/2, float64(h)/2-50+float64(i)*50, color.White, o)
 	}
+}
+
+func drawText(screen *ebiten.Image, x float64, y float64, c color.Color, t string) {
+	op := &text.DrawOptions{}
+	op.GeoM.Translate(x, y)
+	op.ColorScale.ScaleWithColor(c)
+	text.Draw(screen, t, &fontFace, op)
+
 }
 
 func (m *MainMenu) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
