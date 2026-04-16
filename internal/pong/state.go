@@ -36,8 +36,9 @@ type GameState struct {
 }
 
 func (g *GameState) PollState() {
-	g.paddleCollision()
-	g.wallCollision()
+	if !g.paddleCollision() {
+		g.wallCollision()
+	}
 	g.moveBall()
 }
 
@@ -68,16 +69,17 @@ func (g *GameState) wallCollision() {
 	}
 }
 
-func (g *GameState) paddleCollision() {
+func (g *GameState) paddleCollision() bool {
 	if g.Ball.X < PaddleWidth+BallWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y > g.Paddle1 {
 		vec, ydir := computeCollisionBounce(g.Paddle1, g.Ball.Y)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = positive
 		g.Ball.v.unitVecComponents = vec
 		g.hitCount++
-		if (g.hitCount-1)%4 == 0 && g.hitCount < 20 {
+		if (g.hitCount+2)%3 == 0 && g.hitCount < 15 {
 			g.Ball.applyMultiplier(BallVelocityMultiplier)
 		}
+		return true
 	}
 	if g.Ball.X > Width-PaddleWidth-BallWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y > g.Paddle2 {
 		vec, ydir := computeCollisionBounce(g.Paddle2, g.Ball.Y)
@@ -85,10 +87,12 @@ func (g *GameState) paddleCollision() {
 		g.Ball.v.xdir = negative
 		g.Ball.v.unitVecComponents = vec
 		g.hitCount++
-		if g.hitCount%4 == 0 && g.hitCount < 15 {
+		if (g.hitCount+2)%3 == 0 && g.hitCount < 15 {
 			g.Ball.applyMultiplier(BallVelocityMultiplier)
 		}
+		return true
 	}
+	return false
 }
 
 func computeCollisionBounce(paddle float64, y float64) (unitVecComponents, direction) {

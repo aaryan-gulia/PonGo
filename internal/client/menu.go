@@ -81,6 +81,7 @@ func (m *MainMenu) draw(screen *ebiten.Image) {
 	for i, o := range mainMenuOptions {
 		if i == int(m.selected) {
 			drawText(screen, float64(w)/2, float64(h)/2-50+float64(i)*50, color.RGBA{255, 0, 0, 1}, o)
+			continue
 		}
 		drawText(screen, float64(w)/2, float64(h)/2-50+float64(i)*50, color.White, o)
 	}
