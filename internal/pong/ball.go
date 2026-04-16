@@ -1,6 +1,9 @@
 package pong
 
-import "math"
+import (
+	"math"
+	"math/rand"
+)
 
 type direction int
 
@@ -48,4 +51,50 @@ type Ball struct {
 	vscale float64
 	X      float64
 	Y      float64
+}
+
+func initBall() Ball {
+	xdir := positive
+	if rand.Float64() < 0.5 {
+		xdir = negative
+	}
+	ydir := positive
+	if rand.Float64() < 0.5 {
+		ydir = negative
+	}
+	return Ball{
+		v:      unitVec{unitVecComponents: v2(), xdir: xdir, ydir: ydir},
+		vscale: BallVelocityBase,
+		X:      Width / 2,
+		Y:      Height / 2,
+	}
+}
+
+func (b *Ball) reset() {
+	b.v.unitVecComponents = v2()
+	ydir := positive
+	if rand.Float64() < 0.5 {
+		ydir = negative
+	}
+	b.v.ydir = ydir
+	b.vscale = BallVelocityBase
+	b.X = Width / 2
+	b.Y = Height / 2
+}
+
+func (b *Ball) step() {
+	b.X += float64(b.v.xdir) * b.v.i * b.vscale
+	b.Y += float64(b.v.ydir) * b.v.j * b.vscale
+}
+
+func (b *Ball) applyMultiplier(m float64) {
+	b.vscale *= m
+}
+
+func (b *Ball) invertY() {
+	b.v.ydir *= -1
+}
+
+func (b *Ball) invertX() {
+	b.v.xdir *= -1
 }

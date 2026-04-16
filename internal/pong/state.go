@@ -22,13 +22,6 @@ const (
 	N
 )
 
-type Ball struct {
-	vx float64
-	vy float64
-	X  float64
-	Y  float64
-}
-
 type GameState struct {
 	Paddle1  float64
 	Paddle2  float64
@@ -42,58 +35,49 @@ func (g *GameState) PollState() {
 	g.paddleCollision()
 	g.wallCollision()
 	g.moveBall()
-
 }
 
 func (g *GameState) Reset() {
-	g.Ball.X = Width / 2
-	g.Ball.Y = Height / 2
-	g.Ball.vx = BallVelocityBase
-	g.Ball.vy = BallVelocityBase
+	g.Ball = initBall()
+	g.Paddle1 = Height/2 - PaddleHeight/2
+	g.Paddle2 = Height/2 - PaddleHeight/2
 	g.hitCount = 0
 }
 
-func (g *GameState) center() {
-	g.Ball.X = Width / 2
-	g.Ball.Y = Height / 2
-}
-
 func (g *GameState) moveBall() {
-	g.Ball.X += g.Ball.vx
-	g.Ball.Y += g.Ball.vy
-
+	g.Ball.step()
 }
 
 func (g *GameState) paddleCollision() {
 	if g.Ball.X < PaddleWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y > g.Paddle1 {
-		g.Ball.vx *= -1
+		g.Ball.invertX()
 		g.hitCount++
 		if g.hitCount%4 == 0 && g.hitCount < 20 {
-			g.Ball.vx *= BallVelocityMultiplier
-			g.Ball.vy *= BallVelocityMultiplier
+			g.Ball.applyMultiplier(BallVelocityMultiplier)
 		}
 	}
 	if g.Ball.X > Width-PaddleWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y > g.Paddle2 {
-		g.Ball.vx *= -1
+		g.Ball.invertX()
 		g.hitCount++
 		if g.hitCount%4 == 0 && g.hitCount < 15 {
-			g.Ball.vx *= BallVelocityMultiplier
-			g.Ball.vy *= BallVelocityMultiplier
+			g.Ball.applyMultiplier(BallVelocityMultiplier)
 		}
 	}
 }
 
 func (g *GameState) wallCollision() {
 	if g.Ball.Y < 0 || g.Ball.Y+BallHeight > Height {
-		g.Ball.vy *= -1
+		g.Ball.invertY()
 	}
 	if g.Ball.X < 0 {
 		g.Points2++
-		g.Reset()
+		g.Ball.reset()
+		g.hitCount = 0
 	}
 	if g.Ball.X > Width {
 		g.Points1++
-		g.Reset()
+		g.Ball.reset()
+		g.hitCount = 0
 	}
 }
 
@@ -105,6 +89,7 @@ func (g *GameState) MovePaddle1Up() {
 
 	}
 }
+
 func (g *GameState) MovePaddle1Down() {
 	g.Paddle1 += PaddleVelocity
 	if g.Paddle1+PaddleHeight > Height {
@@ -112,6 +97,7 @@ func (g *GameState) MovePaddle1Down() {
 
 	}
 }
+
 func (g *GameState) MovePaddle2Up() {
 	g.Paddle2 -= PaddleVelocity
 
@@ -120,6 +106,7 @@ func (g *GameState) MovePaddle2Up() {
 
 	}
 }
+
 func (g *GameState) MovePaddle2Down() {
 	g.Paddle2 += PaddleVelocity
 	if g.Paddle2+PaddleHeight > Height {
