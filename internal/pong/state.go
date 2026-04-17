@@ -2,6 +2,7 @@ package pong
 
 import (
 	"math"
+	"time"
 )
 
 const (
@@ -36,9 +37,14 @@ type GameState struct {
 	Points2  uint
 	Ball     Ball
 	hitCount uint
+	reset    bool
 }
 
 func (g *GameState) PollState() {
+	if g.reset {
+		g.reset = false
+		time.Sleep(time.Millisecond * 150)
+	}
 	g.paddleCollision()
 	g.wallCollision()
 	g.moveBall()
@@ -63,17 +69,19 @@ func (g *GameState) wallCollision() {
 		g.Points2++
 		g.Ball.reset()
 		g.hitCount = 0
+		g.reset = true
 	}
 	if g.Ball.X > Width {
 		g.Points1++
 		g.Ball.reset()
 		g.hitCount = 0
+		g.reset = true
 	}
 }
 
 func (g *GameState) paddleCollision() bool {
 	if g.Ball.X < PaddleWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y+BallHeight > g.Paddle1 {
-		vec, ydir := computeCollisionBounce(g.Paddle1, g.Ball.Y)
+		vec, ydir := computeCollisionBounce(g.Paddle1, g.Ball.Y+BallWidth/2)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = positive
 		g.Ball.v.VecComponents = vec
@@ -90,7 +98,7 @@ func (g *GameState) paddleCollision() bool {
 		return true
 	}
 	if g.Ball.X > Width-PaddleWidth-BallWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y+BallHeight > g.Paddle2 {
-		vec, ydir := computeCollisionBounce(g.Paddle2, g.Ball.Y)
+		vec, ydir := computeCollisionBounce(g.Paddle2, g.Ball.Y+BallWidth/2)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = negative
 		g.Ball.v.VecComponents = vec
