@@ -5,15 +5,16 @@ import (
 )
 
 const (
-	Width                  float64 = 100
-	Height                 float64 = 100
-	PaddleHeight           float64 = 16
-	PaddleWidth            float64 = 2
-	PaddleVelocity         float64 = 3
-	BallHeight             float64 = 2
-	BallWidth              float64 = 2
-	BallVelocityBase       float64 = 1.0
-	BallVelocityMultiplier float64 = 1.5
+	Width                   float64 = 100
+	Height                  float64 = 100
+	PaddleHeight            float64 = 16
+	PaddleWidth             float64 = 2
+	PaddleVelocity          float64 = 1.33
+	BallHeight              float64 = 2
+	BallWidth               float64 = 2
+	BallVelocityBase        float64 = 0.83
+	BallVelocityMultiplier1 float64 = 1.5
+	BallVelocityMultiplier2 float64 = 1.25
 )
 
 type GameEvent int
@@ -74,10 +75,13 @@ func (g *GameState) paddleCollision() bool {
 		vec, ydir := computeCollisionBounce(g.Paddle1, g.Ball.Y)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = positive
-		g.Ball.v.unitVecComponents = vec
+		g.Ball.v.VecComponents = vec
 		g.hitCount++
-		if (g.hitCount+2)%3 == 0 && g.hitCount < 15 {
-			g.Ball.applyMultiplier(BallVelocityMultiplier)
+		if g.hitCount == 4 {
+			g.Ball.applyMultiplier(BallVelocityMultiplier1)
+		}
+		if g.hitCount == 12 {
+			g.Ball.applyMultiplier(BallVelocityMultiplier2)
 		}
 		return true
 	}
@@ -85,17 +89,20 @@ func (g *GameState) paddleCollision() bool {
 		vec, ydir := computeCollisionBounce(g.Paddle2, g.Ball.Y)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = negative
-		g.Ball.v.unitVecComponents = vec
+		g.Ball.v.VecComponents = vec
 		g.hitCount++
-		if (g.hitCount+2)%3 == 0 && g.hitCount < 15 {
-			g.Ball.applyMultiplier(BallVelocityMultiplier)
+		if g.hitCount == 4 {
+			g.Ball.applyMultiplier(BallVelocityMultiplier1)
+		}
+		if g.hitCount == 12 {
+			g.Ball.applyMultiplier(BallVelocityMultiplier2)
 		}
 		return true
 	}
 	return false
 }
 
-func computeCollisionBounce(paddle float64, y float64) (unitVecComponents, direction) {
+func computeCollisionBounce(paddle float64, y float64) (VecComponents, direction) {
 	ydir := positive
 
 	paddleZone := PaddleHeight / 8

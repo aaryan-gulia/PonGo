@@ -1,42 +1,31 @@
 package pong
 
 import (
-	"math"
 	"math/rand"
 )
 
 type direction int
 
-type unitVecComponents struct {
+type VecComponents struct {
 	i float64
 	j float64
 }
 
-func makeUnitVecComponent(x float64, y float64) unitVecComponents {
-	l2 := x*x + y*y
-
-	return unitVecComponents{
-		i: math.Sqrt(x * x / l2),
-		j: math.Sqrt(y * y / l2),
-	}
-
+func v1() VecComponents {
+	return VecComponents{0.83, 0.00}
+}
+func v2() VecComponents {
+	return VecComponents{0.83, 0.28}
+}
+func v3() VecComponents {
+	return VecComponents{0.83, 0.55}
+}
+func v4() VecComponents {
+	return VecComponents{0.83, 1.11}
 }
 
-func v1() unitVecComponents {
-	return makeUnitVecComponent(1, 0)
-}
-func v2() unitVecComponents {
-	return makeUnitVecComponent(3, 1)
-}
-func v3() unitVecComponents {
-	return makeUnitVecComponent(3, 2)
-}
-func v4() unitVecComponents {
-	return makeUnitVecComponent(3, 4)
-}
-
-type unitVec struct {
-	unitVecComponents
+type Vec struct {
+	VecComponents
 	xdir direction
 	ydir direction
 }
@@ -47,7 +36,7 @@ const (
 )
 
 type Ball struct {
-	v      unitVec
+	v      Vec
 	vscale float64
 	X      float64
 	Y      float64
@@ -63,21 +52,21 @@ func initBall() Ball {
 		ydir = negative
 	}
 	return Ball{
-		v:      unitVec{unitVecComponents: v2(), xdir: xdir, ydir: ydir},
-		vscale: BallVelocityBase,
+		v:      Vec{VecComponents: v2(), xdir: xdir, ydir: ydir},
+		vscale: 1,
 		X:      Width / 2,
 		Y:      Height / 2,
 	}
 }
 
 func (b *Ball) reset() {
-	b.v.unitVecComponents = v2()
+	b.v.VecComponents = v2()
 	ydir := positive
 	if rand.Float64() < 0.5 {
 		ydir = negative
 	}
 	b.v.ydir = ydir
-	b.vscale = BallVelocityBase
+	b.vscale = 1
 	b.X = Width / 2
 	b.Y = Height / 2
 }
