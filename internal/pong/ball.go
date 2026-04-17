@@ -32,7 +32,7 @@ type Vec struct {
 
 const (
 	positive direction = 1
-	negative           = -1
+	negative direction = -1
 )
 
 type Ball struct {
@@ -53,7 +53,7 @@ func initBall() Ball {
 	}
 	return Ball{
 		v:      Vec{VecComponents: v2(), xdir: xdir, ydir: ydir},
-		vscale: 1,
+		vscale: BallVelocityMultiplier0,
 		X:      Width / 2,
 		Y:      Height / 2,
 	}
@@ -66,7 +66,7 @@ func (b *Ball) reset() {
 		ydir = negative
 	}
 	b.v.ydir = ydir
-	b.vscale = 1
+	b.vscale = BallVelocityMultiplier0
 	b.X = Width / 2
 	b.Y = Height / 2
 }
@@ -77,7 +77,7 @@ func (b *Ball) step() {
 }
 
 func (b *Ball) applyMultiplier(m float64) {
-	b.vscale *= m
+	b.vscale = m
 }
 
 func (b *Ball) invertY() {

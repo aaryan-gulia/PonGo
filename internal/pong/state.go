@@ -13,8 +13,10 @@ const (
 	BallHeight              float64 = 2
 	BallWidth               float64 = 2
 	BallVelocityBase        float64 = 0.83
-	BallVelocityMultiplier1 float64 = 1.5
-	BallVelocityMultiplier2 float64 = 1.25
+	BallVelocityMultiplier0 float64 = 0.5
+	BallVelocityMultiplier1 float64 = 1.0
+	BallVelocityMultiplier2 float64 = 1.5
+	BallVelocityMultiplier3 float64 = 2.0
 )
 
 type GameEvent int
@@ -37,9 +39,8 @@ type GameState struct {
 }
 
 func (g *GameState) PollState() {
-	if !g.paddleCollision() {
-		g.wallCollision()
-	}
+	g.paddleCollision()
+	g.wallCollision()
 	g.moveBall()
 }
 
@@ -55,7 +56,7 @@ func (g *GameState) moveBall() {
 }
 
 func (g *GameState) wallCollision() {
-	if g.Ball.Y < 0 || g.Ball.Y+BallHeight > Height {
+	if g.Ball.Y <= 0 || g.Ball.Y+BallHeight >= Height {
 		g.Ball.invertY()
 	}
 	if g.Ball.X < 0 {
@@ -71,31 +72,37 @@ func (g *GameState) wallCollision() {
 }
 
 func (g *GameState) paddleCollision() bool {
-	if g.Ball.X < PaddleWidth+BallWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y > g.Paddle1 {
+	if g.Ball.X < PaddleWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y+BallHeight > g.Paddle1 {
 		vec, ydir := computeCollisionBounce(g.Paddle1, g.Ball.Y)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = positive
 		g.Ball.v.VecComponents = vec
 		g.hitCount++
-		if g.hitCount == 4 {
+		if g.hitCount == 1 {
 			g.Ball.applyMultiplier(BallVelocityMultiplier1)
 		}
-		if g.hitCount == 12 {
+		if g.hitCount == 4 {
 			g.Ball.applyMultiplier(BallVelocityMultiplier2)
+		}
+		if g.hitCount == 12 {
+			g.Ball.applyMultiplier(BallVelocityMultiplier3)
 		}
 		return true
 	}
-	if g.Ball.X > Width-PaddleWidth-BallWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y > g.Paddle2 {
+	if g.Ball.X > Width-PaddleWidth-BallWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y+BallHeight > g.Paddle2 {
 		vec, ydir := computeCollisionBounce(g.Paddle2, g.Ball.Y)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = negative
 		g.Ball.v.VecComponents = vec
 		g.hitCount++
-		if g.hitCount == 4 {
+		if g.hitCount == 1 {
 			g.Ball.applyMultiplier(BallVelocityMultiplier1)
 		}
-		if g.hitCount == 12 {
+		if g.hitCount == 4 {
 			g.Ball.applyMultiplier(BallVelocityMultiplier2)
+		}
+		if g.hitCount == 12 {
+			g.Ball.applyMultiplier(BallVelocityMultiplier3)
 		}
 		return true
 	}
@@ -121,7 +128,7 @@ func computeCollisionBounce(paddle float64, y float64) (VecComponents, direction
 	case dif >= 3*paddleZone:
 		return v4(), ydir
 	}
-	return v1(), ydir
+	return v4(), ydir
 }
 
 //
