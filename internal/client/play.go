@@ -114,8 +114,13 @@ func (g *Game) draw(screen *ebiten.Image) {
 	drawRect(pong.BallWidth*float64(scale), pong.BallHeight*float64(scale), g.state.Ball.X*float64(scale), g.state.Ball.Y*float64(scale), screen)
 }
 
+var newImage *ebiten.Image
+
+func init() {
+	newImage = ebiten.NewImage(1, 1)
+}
+
 func drawRect(w, h, x, y float64, s *ebiten.Image) {
-	newImage := ebiten.NewImage(1, 1)
 	newImage.Fill(color.White)
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Scale(w, h)
