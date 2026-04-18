@@ -81,7 +81,7 @@ func (g *GameState) wallCollision() {
 
 func (g *GameState) paddleCollision() bool {
 	if g.Ball.X < PaddleWidth && g.Ball.Y < g.Paddle1+PaddleHeight && g.Ball.Y+BallHeight > g.Paddle1 {
-		vec, ydir := computeCollisionBounce(g.Paddle1, g.Ball.Y+BallWidth/2)
+		vec, ydir := computeCollisionBounce(g.Paddle1, g.Ball.Y+BallHeight/2)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = positive
 		g.Ball.v.VecComponents = vec
@@ -98,7 +98,7 @@ func (g *GameState) paddleCollision() bool {
 		return true
 	}
 	if g.Ball.X > Width-PaddleWidth-BallWidth && g.Ball.Y < g.Paddle2+PaddleHeight && g.Ball.Y+BallHeight > g.Paddle2 {
-		vec, ydir := computeCollisionBounce(g.Paddle2, g.Ball.Y+BallWidth/2)
+		vec, ydir := computeCollisionBounce(g.Paddle2, g.Ball.Y+BallHeight/2)
 		g.Ball.v.ydir = ydir
 		g.Ball.v.xdir = negative
 		g.Ball.v.VecComponents = vec
